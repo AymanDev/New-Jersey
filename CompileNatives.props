@@ -14,6 +14,7 @@
     <!-- configure build arguments that will be passed to cmake -->
     <ItemGroup>
         <LibBuildArgs Include="-D GRAPHICS=GRAPHICS_API_OPENGL_43" />
+        <LibBuildArgs Include="-D RAYGUI_IMPLEMENTATION=1" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -39,14 +40,14 @@
     <!-- setup platform-specific parameters, like library extension and prefix -->
     <Choose>
         <When
-            Condition="'$(BuildPlatform)' == 'Web' Or $(RuntimeIdentifier.StartsWith('browser-wasm'))">
+                Condition="'$(BuildPlatform)' == 'Web' Or $(RuntimeIdentifier.StartsWith('browser-wasm'))">
             <PropertyGroup>
                 <LibStaticExtension>a</LibStaticExtension>
                 <CompileShared>false</CompileShared>
             </PropertyGroup>
         </When>
         <When
-            Condition="$([MSBuild]::IsOSPlatform('Linux')) Or $(RuntimeIdentifier.StartsWith('linux'))">
+                Condition="$([MSBuild]::IsOSPlatform('Linux')) Or $(RuntimeIdentifier.StartsWith('linux'))">
             <PropertyGroup>
                 <LibStaticExtension>a</LibStaticExtension>
                 <LibExtension>so</LibExtension>
@@ -54,7 +55,7 @@
             </PropertyGroup>
         </When>
         <When
-            Condition="$([MSBuild]::IsOSPlatform('OSX')) Or $(RuntimeIdentifier.StartsWith('osx'))">
+                Condition="$([MSBuild]::IsOSPlatform('OSX')) Or $(RuntimeIdentifier.StartsWith('osx'))">
             <PropertyGroup>
                 <LibStaticExtension>a</LibStaticExtension>
                 <LibExtension>dylib</LibExtension>
@@ -62,7 +63,7 @@
             </PropertyGroup>
         </When>
         <When
-            Condition="$([MSBuild]::IsOSPlatform('Windows')) Or $(RuntimeIdentifier.StartsWith('win'))">
+                Condition="$([MSBuild]::IsOSPlatform('Windows')) Or $(RuntimeIdentifier.StartsWith('win'))">
             <PropertyGroup>
                 <LibStaticExtension>lib</LibStaticExtension>
                 <LibExtension>dll</LibExtension>
@@ -73,7 +74,7 @@
 
     <ItemGroup>
         <LibBuildArgs Include="-D CMAKE_OSX_ARCHITECTURES=$(LibArch)"
-            Condition="$(RuntimeIdentifier.StartsWith('osx'))" />
+                      Condition="$(RuntimeIdentifier.StartsWith('osx'))" />
         <LibBuildArgs Include="-A $(LibArch)" Condition="$(RuntimeIdentifier.StartsWith('win'))" />
     </ItemGroup>
 
@@ -86,16 +87,16 @@
     <!-- link library files to the project root, edit if you need different directory -->
     <ItemGroup>
         <Content
-            Include="$(LibBuildPath)/raylib/$(LibPrefix)raylib.$(LibExtension)"
-            Link="$(LibLinkPath)%(Filename)%(Extension)"
-            CopyToOutputDirectory="PreserveNewest"
-            Condition="$(LibCompileShared) == 'ON' AND Exists('$(LibBuildPath)/raylib/$(LibPrefix)raylib.$(LibExtension)')" />
+                Include="$(LibBuildPath)/raylib/$(LibPrefix)raylib.$(LibExtension)"
+                Link="$(LibLinkPath)%(Filename)%(Extension)"
+                CopyToOutputDirectory="PreserveNewest"
+                Condition="$(LibCompileShared) == 'ON' AND Exists('$(LibBuildPath)/raylib/$(LibPrefix)raylib.$(LibExtension)')" />
 
         <Content
-            Include="$(LibBuildPath)/raylib/$(LibPrefix)raylib.$(LibStaticExtension)"
-            Link="$(LibLinkPath)%(Filename)%(Extension)"
-            CopyToOutputDirectory="PreserveNewest"
-            Condition="$(LibCompileShared) == 'OFF' AND Exists('$(LibBuildPath)/raylib/$(LibPrefix)raylib.$(LibStaticExtension)')" />
+                Include="$(LibBuildPath)/raylib/$(LibPrefix)raylib.$(LibStaticExtension)"
+                Link="$(LibLinkPath)%(Filename)%(Extension)"
+                CopyToOutputDirectory="PreserveNewest"
+                Condition="$(LibCompileShared) == 'OFF' AND Exists('$(LibBuildPath)/raylib/$(LibPrefix)raylib.$(LibStaticExtension)')" />
     </ItemGroup>
 
     <!-- configure build -->
@@ -123,6 +124,6 @@
         <Exec Command="emcmake cmake @(LibBuildArgs, ' ')" />
         <Exec Command="cmake --build $(LibBuildPath) --config $(Configuration)" />
         <Copy SourceFiles="$(LibBuildPath)/raylib/libraylib.a"
-            DestinationFiles="$(LibBuildPath)/raylib/raylib.a" />
+              DestinationFiles="$(LibBuildPath)/raylib/raylib.a" />
     </Target>
 </Project>

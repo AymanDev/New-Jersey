@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net9.0</TargetFramework>
-    <RootNamespace>New_Jersey</RootNamespace>
+    <RootNamespace>NewJersey</RootNamespace>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IncludeAllContentForSelfExtract>true</IncludeAllContentForSelfExtract>
@@ -14,9 +14,9 @@
 
 
   <ItemGroup>
-    <!-- <PackageReference Include="Raylib-cs" Version="7.0.1" /> -->
-    <PackageReference Include="Raylib-cs.BleedingEdge" Version="5.6.2-dev.181" />
-    <!-- <PackageReference Include="Raylib-cs.BleedingEdge.Runtimes" Version="5.6.2-dev.181" /> -->
+    <PackageReference Include="ImGui.NET" Version="1.91.6.1" />
+    <PackageReference Include="Raylib-cs.BleedingEdge" Version="5.6.2-dev.182" />
+    <PackageReference Include="ZLinq" Version="1.5.2" />
   </ItemGroup>
 
   <!-- <ItemGroup> -->
@@ -26,10 +26,11 @@
 
   <ItemGroup>
     <None Update="Game/Assets/**/*.*" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ConfigureArgs Include="-D GRAPHICS=GRAPHICS_API_OPENGL_43" />
+    <None Remove="raylib\projects\Builder\examples\meson.build" />
+    <None Remove="raylib\projects\Builder\meson.build" />
+    <None Update="Game\Assets\Shaders\country.fs">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>

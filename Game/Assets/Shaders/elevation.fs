@@ -1,7 +1,7 @@
 #version 430
 
 layout(std430, binding = 5) buffer ssbo {
-int data_SSBO[];
+uint data_SSBO[];
 };
 
 in vec3 vertexPos;
@@ -14,7 +14,7 @@ uniform int height;
 
 out vec4 finalColor;
 
-vec4 GetTerrainColor(int type) {
+vec4 GetTerrainColor(uint type) {
 if(type == 7) {
 return vec4(1.0, 1.0, 1.0, 1.0);
 }
@@ -43,7 +43,7 @@ if(type == 1) {
 return vec4(0.0, 0.0, 1.0, 1.0);
 }
 
-return vec4(1.0, 0.0, 0.0, 1.0);
+return vec4(1.0, 0.0, 0.0, 0.0);
 }
 
 void main() {
@@ -52,7 +52,7 @@ int y = int(fragTexCoord.y * float(height));
 
 int idx = y * width + x;
 
-int tileType = data_SSBO[idx];
+uint tileType = data_SSBO[idx];
 
 finalColor = GetTerrainColor(tileType);
 }
