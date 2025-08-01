@@ -1,6 +1,6 @@
 ﻿namespace NewJersey.Engine.Commands;
 
-public class AttackBaseCommand(int x, int y, uint attackerId) : BaseCommand(CommandType.Logic)
+public class AttackTileCommand(int x, int y, uint attackerId) : BaseCommand(CommandType.Logic)
 {
     private readonly int _x = x;
     private readonly int _y = y;
@@ -15,9 +15,14 @@ public class AttackBaseCommand(int x, int y, uint attackerId) : BaseCommand(Comm
             return;
         }
 
+        if (tile.Type == TileType.Water)
+        {
+            return;
+        }
+
         tile.CountryId = _attackerId;
 
-        engine.CommandsManager.Enqueue(new UpdateShaderBufferBaseCommand(ref tile));
+        engine.CommandsManager.Enqueue(new UpdateTileCommand(ref tile));
 
         const int range = 5;
         for (var xOffset = -range; xOffset < range; xOffset++)
@@ -44,14 +49,14 @@ public class AttackBaseCommand(int x, int y, uint attackerId) : BaseCommand(Comm
                     continue;
                 }
 
-                engine.CommandsManager.Enqueue(new AttackBaseCommand(neighborX, neighborY, _attackerId));
+                engine.CommandsManager.Enqueue(new AttackTileCommand(neighborX, neighborY, _attackerId));
             }
         }
     }
 
     public override bool Equals(object? obj)
     {
-        if (obj is not AttackBaseCommand command)
+        if (obj is not AttackTileCommand command)
         {
             return false;
         }
@@ -59,7 +64,7 @@ public class AttackBaseCommand(int x, int y, uint attackerId) : BaseCommand(Comm
         return Type == command.Type && _x == command._x && _y == command._y && _attackerId == command._attackerId;
     }
 
-    public bool Equals(AttackBaseCommand other)
+    public bool Equals(AttackTileCommand other)
     {
         return _x == other._x && _y == other._y && _attackerId == other._attackerId;
     }

@@ -17,7 +17,7 @@ public class DebugGui : IUpdate, IDraw
     {
         // rlImGui.Begin();
         ImGui.ShowDemoWindow();
-        Raylib.Button
+        // Raylib.Button
         // rlImGui.End();
     }
 

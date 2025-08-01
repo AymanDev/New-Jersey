@@ -2,7 +2,5 @@
 
 public interface IDraw
 {
-    void Begin();
     void Draw();
-    void End();
 }
