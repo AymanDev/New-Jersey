@@ -3,22 +3,31 @@ using NewJersey.Engine.Gui;
 using NewJersey.Engine.Objects;
 using NewJersey.Engine.Renderer;
 using Raylib_cs.BleedingEdge;
+using ZLinq;
 
 namespace NewJersey.Engine;
 
 public unsafe class Engine : IDestroy, IUpdate
 {
-    private readonly Camera _camera;
+    public Camera Camera { get; }
     public static Engine Instance { get; private set; }
 
     public readonly WorldRenderer WorldRenderer;
 
+    private DebugGui _debugGui;
+    private InGameGui _inGameGui;
+
     public bool IsInEditorMode = false;
+
+    public Player? Player { get; private set; }
 
 
     public readonly TileTypeHelper TileTypeHelper = new();
     public readonly CountriesManager CountriesManager = new();
     public readonly CommandsManager CommandsManager = new();
+
+    public int GridX { get; private set; }
+    public int GridY { get; private set; }
 
     public Grid Grid { get; private set; }
 
@@ -32,10 +41,13 @@ public unsafe class Engine : IDestroy, IUpdate
         Raylib.InitWindow(1280, 720, "New Jersey");
         Raylib.SetTargetFPS(3000);
 
+        _debugGui = new DebugGui();
+        _inGameGui = new InGameGui();
+
         var loadingGui = new LoadingGui();
         loadingGui.Draw();
 
-        _camera = new Camera();
+        Camera = new Camera();
 
         loadingGui.ProgressNext("Loading map image...");
         var image = Raylib.LoadImage("Game/Assets/earth.png");
@@ -100,55 +112,69 @@ public unsafe class Engine : IDestroy, IUpdate
     public void Update()
     {
         CommandsManager.Update();
-        _camera.Update();
-
+        Camera.Update();
         WorldRenderer.Update();
+        _debugGui.Update();
+
+        var mouseWorldPos = Camera.FromCameraToWorld(Raylib.GetMousePosition());
+
+        GridX = (int) Math.Ceiling(mouseWorldPos.X);
+        GridY = (int) Math.Ceiling(mouseWorldPos.Y);
+
+        GridX = Math.Max(Math.Min(GridX, Grid.Width), 0);
+        GridY = Math.Max(Math.Min(GridY, Grid.Height), 0);
+
+
+        if (IsInEditorMode)
+        {
+            if (Raylib.IsMouseButtonPressed(MouseButton.Left))
+            {
+                var country = CountriesManager.CreateCountry(new Color(255, 0, 0));
+
+                ref var tile = ref Grid.GetTile(GridX, GridY);
+                tile.CountryId = country.Id;
+
+                Player = new Player(country.Id);
+            }
+        }
+
+        if (!IsInEditorMode)
+        {
+            _inGameGui.Update();
+
+            if (Raylib.IsMouseButtonPressed(MouseButton.Left))
+            {
+                if (Player is null)
+                {
+                    return;
+                }
+                var country = CountriesManager.Countries.AsValueEnumerable().First().Key;
+                CommandsManager.Enqueue(new AttackTileCommand(GridX, GridY, country));
+            }
+        }
     }
 
     public void Draw()
     {
-        var mousePosInWorld = _camera.FromCameraToWorld(Raylib.GetMousePosition());
-
         Raylib.BeginDrawing();
 
-        _camera.Begin();
+        Camera.Begin();
 
         Raylib.ClearBackground(Color.Black);
 
         WorldRenderer.Draw();
 
 
-        Raylib.DrawCircleV(mousePosInWorld, 20, Color.Red);
+        // Raylib.DrawCircleV(mousePosInWorld, 20, Color.Red);
 
-        _camera.End();
+        Camera.End();
 
+        _debugGui.Draw();
 
-        var offset = 12;
-        Raylib.DrawText($"New Jersey", 12, offset, 20, Color.White);
-        Raylib.DrawText("Performance ", 12, offset += 40, 20, Color.White);
-        Raylib.DrawText($"FPS: {Raylib.GetFPS()}", 12, offset += 20, 20, Color.White);
-        Raylib.DrawText($"Frame Time: {Raylib.GetFrameTime()}", 12, offset += 20, 20, Color.White);
-
-        Raylib.DrawText("Map", 12, offset += 40, 20, Color.White);
-        Raylib.DrawText($"Width: {Grid.Width}", 12, offset += 20, 20, Color.White);
-        Raylib.DrawText($"Height: {Grid.Height}", 12, offset += 20, 20, Color.White);
-        Raylib.DrawText($"Size: {Grid.Tiles.Length}", 12, offset += 20, 20, Color.White);
-
-        Raylib.DrawText("Commands", 12, offset += 40, 20, Color.White);
-        Raylib.DrawText($"Logic: {CommandsManager.LogicCommandsLength}", 12, offset += 20, 20, Color.White);
-        Raylib.DrawText($"Graphics: {CommandsManager.GraphicsCommandsLength}", 12, offset += 20, 20, Color.White);
-
-
-        Raylib.DrawText("Mouse", 12, offset += 40, 20, Color.White);
-        Raylib.DrawText($"Position: {Raylib.GetMousePosition()}", 12, offset += 20, 20, Color.White);
-        Raylib.DrawText($"World Position: {mousePosInWorld}", 12, offset += 20, 20, Color.White);
-        Raylib.DrawText($"Inside map: {IsMouseInsideMap()}", 12, offset += 20, 20, Color.White);
-
-        Raylib.DrawText("Camera", 12, offset += 40, 20, Color.White);
-        Raylib.DrawText($"Target: {_camera.Target}", 12, offset += 20, 20, Color.White);
-        Raylib.DrawText($"Offset: {_camera.Offset}", 12, offset += 20, 20, Color.White);
-        Raylib.DrawText($"Zoom: {_camera.Zoom}", 12, offset += 20, 20, Color.White);
-
+        if (!IsInEditorMode)
+        {
+            _inGameGui.Draw();
+        }
 
         Raylib.EndDrawing();
     }
@@ -165,7 +191,7 @@ public unsafe class Engine : IDestroy, IUpdate
 
     public bool IsMouseInsideMap()
     {
-        var mousePosInWorld = _camera.FromCameraToWorld(Raylib.GetMousePosition());
+        var mousePosInWorld = Camera.FromCameraToWorld(Raylib.GetMousePosition());
 
         return mousePosInWorld.X > 0 && mousePosInWorld.X <= Grid.Width && mousePosInWorld.Y > 0 && mousePosInWorld.Y <= Grid.Height;
     }

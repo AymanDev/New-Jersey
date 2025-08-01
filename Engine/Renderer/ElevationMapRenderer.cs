@@ -33,9 +33,9 @@ public class ElevationMapRenderer : IDraw, IDestroy
             TileType.Water => Color.Blue,
             TileType.Sand => Color.Yellow,
             TileType.Grass => Color.Green,
-            TileType.Forest => Color.DarkGreen,
-            TileType.Hill => Color.Brown,
-            TileType.Mountain => Color.DarkBrown,
+            TileType.Forest => new Color(0, 153, 0),
+            TileType.Hill => new Color(179, 153, 0),
+            TileType.Mountain => new Color(102, 102, 102),
             TileType.HighMountain => Color.White,
             _ => Color.Red
         };
